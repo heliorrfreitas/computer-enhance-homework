@@ -11,7 +11,7 @@ gcc decoding.c -o executable
 To run the program run the following:
 
 ```
-./executable
+./executable listing_0037_single_register_mov listing_0038_many_register_mov
 ```
 
 
