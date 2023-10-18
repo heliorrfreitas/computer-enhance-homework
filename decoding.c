@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
 
 // this function reads a binary file and decode its instructions
 // for this case we only expect copy instructions 
 // from register to register
-void decodeBinaryFile(char *filename){
+char* decodeBinaryFile(char *filename){
 	printf("Decoding instructions for the file named %s\n", filename); 
 	char *W1[] = {"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
 	char *W0[] = {"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
@@ -14,6 +14,10 @@ void decodeBinaryFile(char *filename){
 	FILE *fileP;
 	fileP = fopen(filename, "rb"); // r for read, b for binary
 	fread(buffer, sizeof(buffer), 1, fileP);
+
+	char *returnValue = NULL;
+	returnValue = malloc(500);
+	// returnValue[0]='\0';	
 
 	while(buffer[index] != '\0' ){
 		if(buffer[index] >> 2 == 0b100010){
@@ -29,14 +33,31 @@ void decodeBinaryFile(char *filename){
 			char *valueOfReg = wBit == 0b1 ? W1[reg] : W0[reg];
 			char *valueOfRm = wBit == 0b1 ? W1[rm] : W0[rm];
 
+
+			char result[15];
+			result[0]='\0';
+
 			// MOV destination, source
 			if(0b1 == dBit){
 				// MOV reg, rm
 				printf("mov %s, %s", valueOfReg, valueOfRm);
+				strcat(result, "mov ");
+				strcat(result, valueOfReg);
+				strcat(result, ", ");
+				strcat(result, valueOfRm);
+				strcat(result, "\n");
+				printf("instruction created reg, rm  ==> %s \n", result);
 			}else{
 				// MOV rm, reg
 				printf("mov %s, %s", valueOfRm, valueOfReg);
+				strcat(result, "mov ");
+				strcat(result, valueOfRm);
+				strcat(result, ", ");
+				strcat(result, valueOfReg);
+				strcat(result, "\n");
+				printf("instruction created rm, reg ==> %s \n", result);
 			}
+			strcat(returnValue, result);
 			printf("\n");
 		}
 		index += 1;
@@ -44,14 +65,33 @@ void decodeBinaryFile(char *filename){
 
 	fclose(fileP);	
 	printf("\n\n");
+	return returnValue;
+}
+
+void createAsmFile(char *filename, char *content){
+	printf("filename => %s\n", filename);
+  printf("content => %s\n", content);
+	FILE *file;
+	int filenameSize = strlen(filename) + 10;
+	char fullFilename[filenameSize];
+	fullFilename[0]='\0';
+	strcat(fullFilename, filename);
+	strcat(fullFilename, ".asm");
+	
+	file = fopen(fullFilename, "w");
+	fwrite(content, 1, sizeof(content)+ 10, file);
+	fclose(file);
 }
 
 int main(int argc, char **argv){
 	
+
 	for(int i = 1; i < argc; i++){
-		decodeBinaryFile(argv[i]);	
+		char *result = decodeBinaryFile(argv[i]);
+		printf("printing result here \n\n %s \n\n", result);	
+		createAsmFile(argv[i], result);		
 	}
-	
+
 	return 0;
 }
 
