@@ -16,7 +16,7 @@ char* decodeBinaryFile(char *filename){
 	fread(buffer, sizeof(buffer), 1, fileP);
 
 	char *returnValue = NULL;
-	returnValue = malloc(500);
+	returnValue = malloc(1500);
 	// returnValue[0]='\0';	
 
 	while(buffer[index] != '\0' ){
@@ -69,8 +69,6 @@ char* decodeBinaryFile(char *filename){
 }
 
 void createAsmFile(char *filename, char *content){
-	printf("filename => %s\n", filename);
-  printf("content => %s\n", content);
 	FILE *file;
 	int filenameSize = strlen(filename) + 10;
 	char fullFilename[filenameSize];
@@ -79,18 +77,20 @@ void createAsmFile(char *filename, char *content){
 	strcat(fullFilename, ".asm");
 	
 	file = fopen(fullFilename, "w");
-	fwrite(content, 1, sizeof(content)+ 10, file);
+	fwrite("bits 16\n\n", 1, 10, file);
+	fwrite(content, 1, 1500, file);
 	fclose(file);
+	printf("\nFile %s created!\n", fullFilename);
 }
 
+// this part will receive only one filename
+// then it will be the orchestrator of all the functions
+// which includes
+// 	* decoding the binary file
+// 	* creating a .asm file with the decoded information
 int main(int argc, char **argv){
-	
-
-	for(int i = 1; i < argc; i++){
-		char *result = decodeBinaryFile(argv[i]);
-		printf("printing result here \n\n %s \n\n", result);	
-		createAsmFile(argv[i], result);		
-	}
+	char *asmCode = decodeBinaryFile(argv[1]);
+	createAsmFile(argv[1], asmCode);		
 
 	return 0;
 }
